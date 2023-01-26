@@ -2,7 +2,7 @@
   "development": {
     "username": "root",
     "password": null,
-    "database": "restapi.db",
+    "database": "fsjstd-restapi.db",
     "host": "127.0.0.1",
     "dialect": "sqlite"
   },
