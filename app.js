@@ -53,7 +53,7 @@ app.use((err, req, res, next) => {
 	try {
 		await sequelize.authenticate();
 		console.log('Connection to database successful!');
-		await sequelize.sync({ force: true });
+		await sequelize.sync({ force: false });
 		console.log('Synchronizing models');
 	} catch (err) {
 		console.log('ERROR! Connection to database unsuccessful!', err);

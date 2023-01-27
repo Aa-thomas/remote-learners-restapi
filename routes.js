@@ -19,6 +19,8 @@ function asyncHandler(cb) {
 	};
 }
 
+/*** USERS ROUTES ***/
+
 // GET // Returns a list of users.
 router.get(
 	'/users',
@@ -40,22 +42,14 @@ router.post(
 		const errors = [];
 
 		// Validate the values in the request.
-		if (!user.firstName) {
-			errors.push('Please provide a first name');
-		}
+		if (!user.firstName) errors.push('Please provide a first name');
+		if (!user.lastName) errors.push('Please provide a last name');
+		if (!user.email) errors.push('Please provide a value for "email"');
 
-		if (!user.lastName) {
-			errors.push('Please provide a last name');
-		}
-
-		if (!user.email) {
-			errors.push('Please provide a value for "email"');
-		}
-
-		let password = user.password;
-		if (!password) {
+		// Check if the email is already in use.
+		if (!user.password) {
 			errors.push('Please provide a value for "password"');
-		} else if (password.length < 8 || password.length > 20) {
+		} else if (user.password.length < 8 || user.password.length > 20) {
 			errors.push('Your password should be between 8 and 20 characters');
 		}
 
@@ -67,30 +61,51 @@ router.post(
 			// Add the user to the database.
 			await User.create(req.body);
 
-			// Set the location header
-			res.location('/');
-
-			// Set the status to 201 Created and end the response.
-			res.status(201).end();
+			// Set the location header, then status to 201 Created and end the response.
+			res.location('/').status(201).end();
 		}
 	})
 );
 
-// GET // Returns a list of courses
+/*** COURSES ROUTES ***/
+
+// GET // Returns a list of courses (including the User's associated with the course)
 router.get(
-	'/	courses',
+	'/courses',
 	asyncHandler(async (req, res) => {
-		const courses = await Course.findAll();
-		res.json(courses);
+		const courses = await Course.findAll({
+			include: [
+				{
+					model: User,
+					attributes: ['firstName', 'lastName', 'email'],
+				},
+			],
+			attributes: [
+				'id',
+				'title',
+				'description',
+				'materialsNeeded',
+				'userId',
+			],
+		});
+		res.status(200).json(courses);
+		res.json(course);
 	})
 );
 
-// GET // Returns a course (including the user associated with the course)
+// GET // Returns a single course ( and associated User's )
 router.get(
 	'/courses/:id',
 	asyncHandler(async (req, res) => {
-		const course = await Course.findByPk(req.params.id);
-		res.json(course);
+		const courses = await Course.findByPk(req.params.id, {
+			include: [
+				{
+					model: User,
+					attributes: ['firstName', 'lastName', 'email'],
+				},
+			],
+		});
+		res.json(courses);
 	})
 );
 
