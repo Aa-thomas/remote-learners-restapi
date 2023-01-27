@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 
 // Construct a router instance.
 const router = express.Router();
-const { User } = require('./models');
+const { User, Course } = require('./models');
 
 // Async Handler function to wrap each route with try/catch block.
 function asyncHandler(cb) {
@@ -19,7 +19,7 @@ function asyncHandler(cb) {
 	};
 }
 
-// Route that returns a list of users.
+// GET // Returns a list of users.
 router.get(
 	'/users',
 	asyncHandler(async (req, res) => {
@@ -29,33 +29,29 @@ router.get(
 	})
 );
 
-// Route to create a User
+// POST // Create a User
 router.post(
 	'/users',
 	asyncHandler(async (req, res) => {
 		// Get the user from the request body.
 		const user = req.body;
-		console.log('email-------->', user.firstName, user.lastName);
 
 		// Store errors
 		const errors = [];
 
-		// Validate that we have a `firstName` value.
+		// Validate the values in the request.
 		if (!user.firstName) {
 			errors.push('Please provide a first name');
 		}
 
-		// Validate that we have a `lastName` value.
 		if (!user.lastName) {
 			errors.push('Please provide a last name');
 		}
 
-		// Validate that we have an `email` value.
 		if (!user.email) {
 			errors.push('Please provide a value for "email"');
 		}
 
-		// Validate that we have a `password` value.
 		let password = user.password;
 		if (!password) {
 			errors.push('Please provide a value for "password"');
@@ -71,10 +67,68 @@ router.post(
 			// Add the user to the database.
 			await User.create(req.body);
 
+			// Set the location header
+			res.location('/');
+
 			// Set the status to 201 Created and end the response.
 			res.status(201).end();
 		}
 	})
 );
+
+// GET // Returns a list of courses
+router.get(
+	'/	courses',
+	asyncHandler(async (req, res) => {
+		const courses = await Course.findAll();
+		res.json(courses);
+	})
+);
+
+// GET // Returns a course (including the user associated with the course)
+router.get(
+	'/courses/:id',
+	asyncHandler(async (req, res) => {
+		const course = await Course.findByPk(req.params.id);
+		res.json(course);
+	})
+);
+
+// POST // Creates a course
+router.post(
+	'/courses',
+	asyncHandler(async (req, res) => {
+		// Get the course from the request body.
+		const course = req.body;
+
+		// Store errors
+		const errors = [];
+
+		// Validate the values in the request.
+		if (!course.title) {
+			errors.push('Please provide a title');
+		}
+
+		if (!course.description) {
+			errors.push('Please provide a description');
+		}
+
+		// If there are any errors...
+		if (errors.length > 0) {
+			// Return the validation errors to the client.
+			res.status(400).json({ errors });
+		} else {
+			// Add the course to the database.
+			await Course.create(req.body);
+
+			// Set the location header
+			res.location('/');
+			// Set the status to 201 Created and end the response.
+			res.status(201).end();
+		}
+	})
+);
+
+// PUT // Updates a course
 
 module.exports = router;
