@@ -42,16 +42,24 @@ router.post(
 		const errors = [];
 
 		// Validate the values in the request.
-		if (!user.firstName) errors.push('Please provide a first name');
-		if (!user.lastName) errors.push('Please provide a last name');
+		if (!user.firstName)
+			errors.push('Please provide a value for "firstName"');
+		if (!user.lastName) errors.push('Please provide a value for "lastName"');
 		if (!user.email) errors.push('Please provide a value for "email"');
 
-		// Check if the email is already in use.
-		if (!user.password) {
-			errors.push('Please provide a value for "password"');
-		} else if (user.password.length < 8 || user.password.length > 20) {
-			errors.push('Your password should be between 8 and 20 characters');
-		}
+		// Validate Password. Checks if: exists, length, contains at least one letter, number and special character
+		if (!user.password) errors.push('Please provide a value for "password"');
+		if (user.password.length < 8 || user.password.length > 20)
+			errors.push('Your password must be between 8 and 20 characters');
+		if (user.password.search(/[a-z]/i) < 0)
+			errors.push('Your password must contain at least one letter');
+		if (user.password.search(/[0-9]/) < 0)
+			errors.push('Your password must contain at least one digit');
+		// your passwoord should contain 1 special character
+		if (user.password.search(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/) < 0)
+			errors.push(
+				'Your password must contain at least one special character'
+			);
 
 		// If there are any errors...
 		if (errors.length > 0) {
