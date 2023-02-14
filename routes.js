@@ -13,8 +13,15 @@ function asyncHandler(cb) {
 		try {
 			await cb(req, res, next);
 		} catch (error) {
+			if (
+				error.name === 'SequelizeValidationError' ||
+				error.name === 'SequelizeUniqueConstraintError'
+			) {
+				const errors = error.errors.map((err) => err.message);
+				res.status(400).json({ 'Sequelize validation error': errors });
+			}
 			// Forward error to the global error handler
-			next(error);
+			else next(error);
 		}
 	};
 }
@@ -60,11 +67,13 @@ router.post(
 			errors.push(
 				'Your password must contain at least one special character'
 			);
+		// If not validating through SQL, hash the password here before storing password
+		// user.password = bcrypt.hashSync(password, 10);a
 
 		// If there are any errors...
 		if (errors.length > 0) {
 			// Return the validation errors to the client.
-			res.status(400).json({ errors });
+			res.status(400).json({ 'Server validation error': errors });
 		} else {
 			// Add the user to the database.
 			await User.create(req.body);
@@ -128,24 +137,19 @@ router.post(
 		const errors = [];
 
 		// Validate the values in the request.
-		if (!course.title) {
-			errors.push('Please provide a title');
-		}
-
-		if (!course.description) {
-			errors.push('Please provide a description');
-		}
+		if (!course.title) errors.push('Please provide a title');
+		if (!course.description) errors.push('Please provide a description');
 
 		// If there are any errors...
 		if (errors.length > 0) {
 			// Return the validation errors to the client.
-			res.status(400).json({ errors });
+			res.status(400).json({ 'Server validation error': errors });
 		} else {
 			// Add the course to the database.
 			await Course.create(req.body);
 
 			// Set the location header
-			res.location('/');
+			res.location('/courses/:id');
 			// Set the status to 201 Created and end the response.
 			res.status(201).end();
 		}
@@ -153,5 +157,54 @@ router.post(
 );
 
 // PUT // Updates a course
+router.put(
+	'/courses/:id',
+	asyncHandler(async (req, res) => {
+		// Get the course using the params from the request body
+		const course = await Course.findByPk(req.params.id);
+		console.log(course);
+		if (!course)
+			res.status(400).json({ message: 'This course does not exist' });
+
+		// Store errors
+		const errors = [];
+
+		// Validate the values in the request.
+		if (!course.title) errors.push('Please provide a title');
+		if (!course.description) errors.push('Please provide a description');
+
+		// If there are any errors...
+		if (errors.length > 0) {
+			// Return the validation errors to the client.
+			res.status(400).json({ 'Server validation error': errors });
+		} else {
+			// Update the course in the database.
+			await course.update(req.body);
+			// Set the status to 204 No Content and end the response.
+			res.status(204).end();
+		}
+	})
+);
+
+// DELETE // Deletes a course
+router.delete(
+	'/courses/:id',
+	asyncHandler(async (req, res) => {
+		// Get the course using the params from the request body
+		const course = await Course.findByPk(req.params.id);
+		console.log(course);
+
+		// Check if course exists
+		if (course) {
+			// Delete the course in the database.
+			await course.destroy();
+			// Set the status to 204 No Content and end the response.
+			res.status(204).end();
+		} else {
+			// If course does not exist, return 404
+			res.status(404).json({ message: 'This course does not exist' });
+		}
+	})
+);
 
 module.exports = router;
