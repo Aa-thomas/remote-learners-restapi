@@ -1,7 +1,7 @@
 'use strict';
 
 const auth = require('basic-auth');
-const User = require('../models/User');
+const { User } = require('../models');
 const bcrypt = require('bcrypt');
 
 // Middleware to authenticate the request using Basic Auth.
@@ -11,7 +11,6 @@ exports.authenticateUser = async (req, res, next) => {
 
 	// Parse the user's credentials from the Authorization header.
 	const credentials = auth(req);
-	User;
 
 	// If the user's credentials are available...
 	if (credentials) {

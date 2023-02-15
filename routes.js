@@ -2,39 +2,30 @@
 
 const express = require('express');
 const bcrypt = require('bcrypt');
+const { asyncHandler } = require('./middleware/asyncHandler');
+const { authenticateUser } = require('./middleware/auth-user');
 
 // Construct a router instance.
 const router = express.Router();
 const { User, Course } = require('./models');
-
-// Async Handler function to wrap each route with try/catch block.
-function asyncHandler(cb) {
-	return async (req, res, next) => {
-		try {
-			await cb(req, res, next);
-		} catch (error) {
-			if (
-				error.name === 'SequelizeValidationError' ||
-				error.name === 'SequelizeUniqueConstraintError'
-			) {
-				const errors = error.errors.map((err) => err.message);
-				res.status(400).json({ 'Sequelize validation error': errors });
-			}
-			// Forward error to the global error handler
-			else next(error);
-		}
-	};
-}
 
 /*** USERS ROUTES ***/
 
 // GET // Returns a list of users.
 router.get(
 	'/users',
+	authenticateUser,
 	asyncHandler(async (req, res) => {
-		let users = await User.findAll();
-		console.log('!!------ Users ------!!', await User.findAll());
-		res.json(users);
+		// Get the user from the request body.
+		const currentUser = req.currentUser;
+
+		// Return the user.
+		res.status(200).json({
+			firstName: currentUser.firstName,
+			lastName: currentUser.lastName,
+			email: currentUser.email,
+			id: currentUser.id,
+		});
 	})
 );
 
@@ -106,7 +97,6 @@ router.get(
 			],
 		});
 		res.status(200).json(courses);
-		res.json(course);
 	})
 );
 
@@ -122,15 +112,22 @@ router.get(
 				},
 			],
 		});
-		res.json(courses);
+
+		// If the course is not found, return a 404 status code.
+		if (!course) res.status(404).json({ message: 'Course not found' });
+
+		// If the course is found, return a 200 status code and the course.
+		res.status(200).json(courses);
 	})
 );
 
 // POST // Creates a course
 router.post(
 	'/courses',
+	authenticateUser,
 	asyncHandler(async (req, res) => {
-		// Get the course from the request body.
+		// Get the current user and course from the request body.
+		const currentUser = req.currentUser;
 		const course = req.body;
 
 		// Store errors
@@ -146,10 +143,13 @@ router.post(
 			res.status(400).json({ 'Server validation error': errors });
 		} else {
 			// Add the course to the database.
-			await Course.create(req.body);
+			const course = await Course.create({
+				...req.body,
+				userId: currentUser.id,
+			});
 
 			// Set the location header
-			res.location('/courses/:id');
+			res.location(`/courses/${course.id}`);
 			// Set the status to 201 Created and end the response.
 			res.status(201).end();
 		}
@@ -159,15 +159,29 @@ router.post(
 // PUT // Updates a course
 router.put(
 	'/courses/:id',
+	authenticateUser,
 	asyncHandler(async (req, res) => {
+		// Get the current user from the request body.
+		const currentUser = req.currentUser;
+		console.log(currentUser);
+
 		// Get the course using the params from the request body
 		const course = await Course.findByPk(req.params.id);
-		console.log(course);
-		if (!course)
-			res.status(400).json({ message: 'This course does not exist' });
 
 		// Store errors
 		const errors = [];
+
+		// If the course is not found, return a 404 status code.
+		if (!course) {
+			res.status(404).json({ message: 'Course not found' });
+		}
+
+		// If the course is found, but the current user is not the owner, return a 403 status code.
+		if (course.userId !== currentUser.id)
+			res.status(403).json({
+				message:
+					'You are not authorized to update this course. Please create your own course in order to update.',
+			});
 
 		// Validate the values in the request.
 		if (!course.title) errors.push('Please provide a title');

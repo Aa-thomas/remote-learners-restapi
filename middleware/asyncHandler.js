@@ -1,7 +1,7 @@
-// Async Handler function to wrap each route with try/catch block.
 'use strict';
 
-function asyncHandler(cb) {
+// Async Handler function to wrap each route with try/catch block.
+exports.asyncHandler = (cb) => {
 	return async (req, res, next) => {
 		try {
 			await cb(req, res, next);
@@ -17,4 +17,4 @@ function asyncHandler(cb) {
 			else next(error);
 		}
 	};
-}
+};
