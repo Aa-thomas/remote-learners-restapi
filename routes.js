@@ -46,20 +46,23 @@ router.post(
 		if (!user.email) errors.push('Please provide a value for "email"');
 
 		// Validate Password. Checks if: exists, length, contains at least one letter, number and special character
-		if (!user.password) errors.push('Please provide a value for "password"');
-		if (user.password.length < 8 || user.password.length > 20)
-			errors.push('Your password must be between 8 and 20 characters');
-		if (user.password.search(/[a-z]/i) < 0)
-			errors.push('Your password must contain at least one letter');
-		if (user.password.search(/[0-9]/) < 0)
-			errors.push('Your password must contain at least one digit');
-		// your passwoord should contain 1 special character
-		if (user.password.search(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/) < 0)
-			errors.push(
-				'Your password must contain at least one special character'
-			);
-		// If not validating through SQL, hash the password here before storing password
-		// user.password = bcrypt.hashSync(password, 10);a
+		if (!user.password) {
+			errors.push('Please provide a value for "password"');
+		} else {
+			if (user.password.length < 8 || user.password.length > 20)
+				errors.push('Your password must be between 8 and 20 characters');
+			if (user.password.search(/[a-z]/i) < 0)
+				errors.push('Your password must contain at least one letter');
+			if (user.password.search(/[0-9]/) < 0)
+				errors.push('Your password must contain at least one digit');
+			// your passwoord should contain 1 special character
+			if (user.password.search(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/) < 0)
+				errors.push(
+					'Your password must contain at least one special character'
+				);
+			// If not validating through SQL, hash the password here before storing password
+			// user.password = bcrypt.hashSync(password, 10);a
+		}
 
 		// If there are any errors...
 		if (errors.length > 0) {
@@ -76,6 +79,34 @@ router.post(
 );
 
 /*** COURSES ROUTES ***/
+
+// GET // Returns a single course ( and associated User's )
+router.get(
+	'/courses/:id',
+	asyncHandler(async (req, res) => {
+		const course = await Course.findByPk(req.params.id, {
+			include: [
+				{
+					model: User,
+					attributes: ['firstName', 'lastName', 'email'],
+				},
+			],
+			attributes: [
+				'id',
+				'title',
+				'description',
+				'materialsNeeded',
+				'userId',
+			],
+		});
+
+		// If the course is not found, return a 404 status code.
+		if (!course) res.status(404).json({ message: 'Course not found' });
+
+		// If the course is found, return a 200 status code and the course.
+		res.status(200).json(course);
+	})
+);
 
 // GET // Returns a list of courses (including the User's associated with the course)
 router.get(
@@ -96,27 +127,6 @@ router.get(
 				'userId',
 			],
 		});
-		res.status(200).json(courses);
-	})
-);
-
-// GET // Returns a single course ( and associated User's )
-router.get(
-	'/courses/:id',
-	asyncHandler(async (req, res) => {
-		const courses = await Course.findByPk(req.params.id, {
-			include: [
-				{
-					model: User,
-					attributes: ['firstName', 'lastName', 'email'],
-				},
-			],
-		});
-
-		// If the course is not found, return a 404 status code.
-		if (!course) res.status(404).json({ message: 'Course not found' });
-
-		// If the course is found, return a 200 status code and the course.
 		res.status(200).json(courses);
 	})
 );
@@ -161,15 +171,9 @@ router.put(
 	'/courses/:id',
 	authenticateUser,
 	asyncHandler(async (req, res) => {
-		// Get the current user from the request body.
+		// Get the current user and course from the request body.
 		const currentUser = req.currentUser;
-		console.log(currentUser);
-
-		// Get the course using the params from the request body
 		const course = await Course.findByPk(req.params.id);
-
-		// Store errors
-		const errors = [];
 
 		// If the course is not found, return a 404 status code.
 		if (!course) {
@@ -177,11 +181,14 @@ router.put(
 		}
 
 		// If the course is found, but the current user is not the owner, return a 403 status code.
-		if (course.userId !== currentUser.id)
+		if (course.userId !== currentUser.id) {
 			res.status(403).json({
-				message:
-					'You are not authorized to update this course. Please create your own course in order to update.',
+				message: 'You are not authorized to update this course.',
 			});
+		}
+
+		// Store errors
+		const errors = [];
 
 		// Validate the values in the request.
 		if (!course.title) errors.push('Please provide a title');
@@ -203,21 +210,28 @@ router.put(
 // DELETE // Deletes a course
 router.delete(
 	'/courses/:id',
+	authenticateUser,
 	asyncHandler(async (req, res) => {
-		// Get the course using the params from the request body
+		// Get the current user and course from the request body.
+		const currentUser = req.currentUser;
 		const course = await Course.findByPk(req.params.id);
-		console.log(course);
 
-		// Check if course exists
-		if (course) {
-			// Delete the course in the database.
-			await course.destroy();
-			// Set the status to 204 No Content and end the response.
-			res.status(204).end();
-		} else {
-			// If course does not exist, return 404
-			res.status(404).json({ message: 'This course does not exist' });
+		// If the course is not found, return a 404 status code.
+		if (!course) {
+			res.status(404).json({ message: 'Course not found' });
 		}
+
+		// If the course is found, but the current user is not the owner, return a 403 status code.
+		else if (course.userId !== currentUser.id) {
+			res.status(403).json({
+				message: 'You are not authorized to update this course.',
+			});
+		}
+
+		// Delete the course in the database.
+		else await course.destroy();
+		// Set the status to 204 No Content and end the response.
+		res.status(204).end();
 	})
 );
 
