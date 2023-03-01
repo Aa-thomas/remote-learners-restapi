@@ -67,7 +67,7 @@ router.post(
 		// If there are any errors...
 		if (errors.length > 0) {
 			// Return the validation errors to the client.
-			res.status(400).json({ 'Server validation error': errors });
+			res.status(400).json({ errors });
 		} else {
 			// Add the user to the database.
 			await User.create(req.body);
@@ -150,7 +150,7 @@ router.post(
 		// If there are any errors...
 		if (errors.length > 0) {
 			// Return the validation errors to the client.
-			res.status(400).json({ 'Server validation error': errors });
+			res.status(400).json({ errors });
 		} else {
 			// Add the course to the database.
 			const course = await Course.create({
@@ -197,7 +197,7 @@ router.put(
 		// If there are any errors...
 		if (errors.length > 0) {
 			// Return the validation errors to the client.
-			res.status(400).json({ 'Server validation error': errors });
+			res.status(400).json({ errors });
 		} else {
 			// Update the course in the database.
 			await course.update(req.body);
