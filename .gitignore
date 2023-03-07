@@ -61,5 +61,4 @@ typings/
 .next
 
 # SQLite database file
-*.db
-127.0.0.1
+
