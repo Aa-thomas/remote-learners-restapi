@@ -8,7 +8,7 @@ class Database {
     this.courses = seedData.courses;
     this.users = seedData.users;
     this.enableLogging = enableLogging;
-    this.context = new Context('fsjstd-restapi.db', enableLogging);
+    this.context = new Context('remotelearners-restapi.db', enableLogging);
   }
 
   log(message) {
@@ -40,7 +40,7 @@ class Database {
       `,
       user.firstName,
       user.lastName,
-      user.emailAddress,
+      user.email,
       user.password);
   }
 

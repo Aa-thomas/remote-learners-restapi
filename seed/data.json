@@ -1,16 +1,18 @@
 {
   "users": [
     {
-      "firstName": "Joe",
-      "lastName": "Smith",
-      "emailAddress": "joe@smith.com",
-      "password": "joepassword"
+      "firstName": "Bruce",
+      "lastName": "Wayne",
+      "email": "batman@gmail.com",
+      "password": "Batman$99",
+      "confirmedPassword": "Batman$99"
     },
     {
-      "firstName": "Sally",
-      "lastName": "Jones",
-      "emailAddress": "sally@jones.com",
-      "password": "sallypassword"
+      "firstName": "Peter",
+      "lastName": "Parker",
+      "email": "spiderman@gmail.com",
+      "password": "Spiderman$99",
+      "confirmedPassword":"Spiderman$99"
     }
   ],
   "courses": [
