@@ -1,14 +1,24 @@
 {
   "development": {
-    "dialect": "sqlite",
-    "storage": "remotelearners-restapi.db"
+    "username": "root",
+    "password": null,
+    "database": "remotelearners-restapi.db",
+    "host": "127.0.0.1",
+    "dialect": "sqlite"
   },
   "test": {
-    "dialect": "sqlite",
-    "storage": "remotelearners-restapi.db"
+    "username": "root",
+    "password": null,
+    "database": "database_test",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
   },
   "production": {
-    "dialect": "sqlite",
-    "storage": "remotelearners-restapi.db"
+    "username": "root",
+    "password": null,
+    "database": "database_production",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
   }
 }
+
