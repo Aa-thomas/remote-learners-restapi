@@ -21,12 +21,18 @@ app.use(express.json());
 app.use(morgan('dev'));
 
 // setup CORS support
-app.use(cors());
+app.use(
+	cors()
+	// {
+	// origin: 'https://remote-learners.vercel.app',
+	// methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+	// }
+);
 
 // setup a friendly greeting for the root route
 app.get('/', (req, res) => {
 	res.json({
-		message: 'Welcome to my REST API project!',
+		message: 'Welcome to the remote learners rest api',
 	});
 });
 
@@ -56,9 +62,8 @@ app.use((req, res) => {
 (async () => {
 	try {
 		await sequelize.authenticate();
-		console.log('Connection to database successful!');
 		await sequelize.sync({ force: false });
-		console.log('Synchronizing models');
+		console.log('Connection to database successful!');
 	} catch (err) {
 		console.log('ERROR! Connection to database unsuccessful!', err);
 	}

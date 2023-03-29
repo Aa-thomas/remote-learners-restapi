@@ -177,14 +177,16 @@ router.put(
 
 		// If the course is not found, return a 404 status code.
 		if (!course) {
-			res.status(404).json({ message: 'Course not found' });
+			res.status(404).json({ message: 'Course not found' }).end();
 		}
 
 		// If the course is found, but the current user is not the owner, return a 403 status code.
 		if (course.userId !== currentUser.id) {
-			res.status(403).json({
-				message: 'You are not authorized to update this course.',
-			});
+			res.status(403)
+				.json({
+					message: 'You are not authorized to update this course.',
+				})
+				.end();
 		}
 
 		// Store errors
