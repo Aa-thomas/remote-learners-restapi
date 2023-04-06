@@ -94,6 +94,7 @@ router.get(
 			attributes: [
 				'id',
 				'title',
+				'imageUrl',
 				'description',
 				'materialsNeeded',
 				'userId',
@@ -122,6 +123,7 @@ router.get(
 			attributes: [
 				'id',
 				'title',
+				'imageUrl',
 				'description',
 				'materialsNeeded',
 				'userId',
@@ -139,14 +141,13 @@ router.post(
 		// Get the current user and course from the request body.
 		const currentUser = req.currentUser;
 		const course = req.body;
+		console.log('course', course);
 
 		// Store errors
 		const errors = [];
-
 		// Validate the values in the request.
 		if (!course.title) errors.push('Please provide a title');
 		if (!course.description) errors.push('Please provide a description');
-
 		// If there are any errors...
 		if (errors.length > 0) {
 			// Return the validation errors to the client.
@@ -157,7 +158,6 @@ router.post(
 				...req.body,
 				userId: currentUser.id,
 			});
-
 			// Set the location header
 			res.location(`/courses/${course.id}`);
 			// Set the status to 201 Created and end the response.

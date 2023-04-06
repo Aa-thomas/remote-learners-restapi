@@ -53,7 +53,7 @@ class Database {
         INSERT INTO Courses
           (userId, title, imageUrl, description, estimatedTime, materialsNeeded, createdAt, updatedAt)
         VALUES
-          (?, ?,?,?, ?, ?, datetime('now'), datetime('now'));
+          (?,?,?,?, ?, ?, datetime('now'), datetime('now'));
       `,
 			course.userId,
 			course.title,
@@ -136,7 +136,7 @@ class Database {
       CREATE TABLE Courses (
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
         title VARCHAR(255) NOT NULL DEFAULT '',
-		  imageUrl VARCHAR(255), 
+		  imageUrl VARCHAR(255) NOT NULL DEFAULT '', 
         description TEXT NOT NULL DEFAULT '', 
         estimatedTime VARCHAR(255), 
         materialsNeeded VARCHAR(255), 
