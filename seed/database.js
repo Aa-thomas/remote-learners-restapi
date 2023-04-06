@@ -51,12 +51,13 @@ class Database {
 		return this.context.execute(
 			`
         INSERT INTO Courses
-          (userId, title, description, estimatedTime, materialsNeeded, createdAt, updatedAt)
+          (userId, title, imageUrl, description, estimatedTime, materialsNeeded, createdAt, updatedAt)
         VALUES
-          (?, ?, ?, ?, ?, datetime('now'), datetime('now'));
+          (?, ?,?,?, ?, ?, datetime('now'), datetime('now'));
       `,
 			course.userId,
 			course.title,
+			course.imageUrl,
 			course.description,
 			course.estimatedTime,
 			course.materialsNeeded
@@ -134,7 +135,8 @@ class Database {
 		await this.context.execute(`
       CREATE TABLE Courses (
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        title VARCHAR(255) NOT NULL DEFAULT '', 
+        title VARCHAR(255) NOT NULL DEFAULT '',
+		  imageUrl VARCHAR(255), 
         description TEXT NOT NULL DEFAULT '', 
         estimatedTime VARCHAR(255), 
         materialsNeeded VARCHAR(255), 

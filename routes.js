@@ -214,6 +214,7 @@ router.delete(
 	'/courses/:id',
 	authenticateUser,
 	asyncHandler(async (req, res) => {
+		console.log('hellooooo');
 		// Get the current user and course from the request body.
 		const currentUser = req.currentUser;
 		const course = await Course.findByPk(req.params.id);
